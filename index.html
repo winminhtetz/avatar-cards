@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Avatar Cards Gallery</title>
+    <!-- Tailwind CSS for responsive 5-column layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      /* 3D Card Flip Mechanics */
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .flip-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+      }
+      .is-flipped .flip-inner {
+        transform: rotateY(180deg);
+      }
+      .flip-face {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+      .flip-back {
+        transform: rotateY(180deg);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-50 text-slate-900 h-screen overflow-hidden flex flex-col"
+  >
+    <!-- Main Content Area (Fills remaining viewport height without scrolling) -->
+    <main
+      class="flex-grow min-h-0 max-w-7xl w-full mx-auto px-1.5 sm:px-6 lg:px-8 pt-1.5 sm:pt-3 pb-1 flex flex-col"
+    >
+      <!-- Loading State -->
+      <div
+        id="loading-state"
+        class="flex-grow flex flex-col items-center justify-center"
+      >
+        <div
+          class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600 mb-3"
+        ></div>
+        <p class="text-slate-600 text-sm font-medium">
+          Loading avatar cards...
+        </p>
+      </div>
+
+      <!-- Error State -->
+      <div
+        id="error-state"
+        class="hidden bg-red-50 border border-red-200 rounded-xl p-4 sm:p-6 text-center max-w-lg mx-auto my-auto"
+      >
+        <h3 class="text-base sm:text-lg font-semibold text-red-900">
+          Failed to Load Cards
+        </h3>
+        <p id="error-message" class="text-xs sm:text-sm text-red-700 mt-1 mb-4">
+          Unable to fetch manifest from CDN.
+        </p>
+        <button
+          onclick="fetchCards()"
+          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+
+      <!-- Strict 5-Column Avatar Cards Grid fitting viewport height -->
+      <div
+        id="cards-grid"
+        class="flex-grow min-h-0 grid grid-cols-5 gap-1 sm:gap-2.5 md:gap-3"
+      >
+        <!-- Cards will be dynamically injected here -->
+      </div>
+    </main>
+
+    <!-- Footer with Reveal All Cards Button -->
+    <footer class="bg-white border-t border-slate-200 shrink-0 z-30">
+      <div
+        class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-center gap-2 sm:gap-3"
+      >
+        <div
+          id="selected-card-display"
+          class="px-4 py-2 bg-slate-100 text-slate-800 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 flex items-center gap-2 select-none"
+        >
+          <img
+            id="footer-selected-thumb"
+            src=""
+            alt=""
+            class="w-4 h-5 object-cover rounded hidden"
+          />
+          <span id="footer-selected-label">No Card Selected</span>
+        </div>
+        <button
+          onclick="revealAllCards()"
+          class="flex-1 sm:flex-initial px-6 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer"
+        >
+          Reveal All Cards
+        </button>
+      </div>
+    </footer>
+
+    <!-- First-Load Card Selection Dialog -->
+    <div
+      id="select-card-modal"
+      class="fixed inset-0 z-50 hidden bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4"
+    >
+      <div
+        class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+      >
+        <div
+          class="px-4 py-3.5 sm:px-5 sm:py-4 border-b border-slate-100 flex items-center justify-between shrink-0"
+        >
+          <h2 class="text-sm sm:text-base font-bold text-slate-900">
+            သင်နှစ်သက်ရာကတ် ၁ ကတ်ကိုရွေးပါ
+          </h2>
+        </div>
+        <div class="p-3 sm:p-4 overflow-y-auto flex-grow">
+          <div id="select-cards-grid" class="grid grid-cols-5 gap-2 sm:gap-3">
+            <!-- Selectable cards will be injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification for Copy Feedback -->
+    <div
+      id="toast"
+      class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none"
+    >
+      <div
+        class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 text-sm font-medium"
+      >
+        <svg
+          class="w-5 h-5 text-emerald-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          ></path>
+        </svg>
+        <span id="toast-message">Copied URL to clipboard!</span>
+      </div>
+    </div>
+
+    <!-- Modal for Full-Size Card Preview -->
+    <div
+      id="preview-modal"
+      class="fixed inset-0 z-40 hidden bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4"
+      onclick="closeModal()"
+    >
+      <div
+        class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl transform transition-all"
+        onclick="event.stopPropagation()"
+      >
+        <div
+          class="p-4 border-b border-slate-100 flex items-center justify-between"
+        >
+          <h3
+            id="modal-title"
+            class="font-semibold text-slate-900 truncate pr-4"
+          >
+            Card Details
+          </h3>
+          <button
+            onclick="closeModal()"
+            class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-6 bg-slate-100 flex items-center justify-center">
+          <img
+            id="modal-image"
+            src=""
+            alt="Card Preview"
+            class="max-h-96 w-auto object-contain rounded-xl shadow-md"
+          />
+        </div>
+        <div class="p-5 space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1"
+              >CDN Direct URL</label
+            >
+            <div class="flex gap-2">
+              <input
+                id="modal-url"
+                type="text"
+                readonly
+                class="w-full text-xs bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none"
+              />
+              <button
+                onclick="copyModalUrl()"
+                class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors shrink-0"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Exact CDN endpoints provided
+      const MANIFEST_URL =
+        "https://cdn.jsdelivr.net/gh/winminhtetz/avatar-cards/api/avatar_cards.json";
+      const CARDS_BASE_URL =
+        "https://cdn.jsdelivr.net/gh/winminhtetz/avatar-cards/cards/";
+      const STORAGE_KEY = "selected_avatar_card_v1";
+
+      let allCards = [];
+      let selectedCard = null;
+
+      const gridEl = document.getElementById("cards-grid");
+      const loadingEl = document.getElementById("loading-state");
+      const errorEl = document.getElementById("error-state");
+      const selectModalEl = document.getElementById("select-card-modal");
+      const selectGridEl = document.getElementById("select-cards-grid");
+
+      /**
+       * Normalizes any JSON entry shape (string filename or object with filename/file/image/name/url)
+       */
+      function normalizeCardItem(item, index) {
+        if (typeof item === "string") {
+          const filename = item.split("/").pop();
+          return {
+            id: index + 1,
+            filename: filename,
+            name: filename
+              .replace(/\.[^/.]+$/, "")
+              .replace(/^\d+_/, "")
+              .replace(/[_-]+/g, " "),
+            url: item.startsWith("http")
+              ? item
+              : CARDS_BASE_URL + encodeURIComponent(filename),
+          };
+        }
+
+        const filename =
+          item.filename ||
+          item.file ||
+          item.image ||
+          (item.url ? item.url.split("/").pop() : `card_${index + 1}.png`);
+        const rawName =
+          item.name ||
+          item.title ||
+          filename
+            .replace(/\.[^/.]+$/, "")
+            .replace(/^\d+_/, "")
+            .replace(/[_-]+/g, " ");
+        const url =
+          item.url && item.url.startsWith("http")
+            ? item.url
+            : CARDS_BASE_URL + encodeURIComponent(filename);
+
+        return {
+          id: item.id ?? index + 1,
+          filename: filename,
+          name: rawName,
+          url: url,
+        };
+      }
+
+      /**
+       * Fetches the avatar cards manifest from jsDelivr CDN
+       */
+      async function fetchCards() {
+        loadingEl.classList.remove("hidden");
+        errorEl.classList.add("hidden");
+        gridEl.classList.add("hidden");
+
+        try {
+          const response = await fetch(MANIFEST_URL);
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // Support root array or object with cards/avatars/items/data keys
+          let rawList = [];
+          if (Array.isArray(data)) {
+            rawList = data;
+          } else if (data && typeof data === "object") {
+            rawList =
+              data.cards || data.avatars || data.items || data.data || [];
+          }
+
+          allCards = rawList.map((item, idx) => normalizeCardItem(item, idx));
+
+          loadingEl.classList.add("hidden");
+          renderCards(allCards);
+          initSelectedCardState();
+        } catch (error) {
+          console.error("Error fetching avatar cards manifest:", error);
+          loadingEl.classList.add("hidden");
+          errorEl.classList.remove("hidden");
+          document.getElementById("error-message").textContent =
+            error.message || "Unable to load manifest.";
+        }
+      }
+
+      /**
+       * Checks localStorage on page load; opens selection dialog if no card is stored yet
+       */
+      function initSelectedCardState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            const matched = allCards.find(
+              (c) => c.filename === parsed.filename || c.id === parsed.id,
+            );
+            if (matched) {
+              selectedCard = matched;
+              updateSelectedCardUI();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn("Unable to read saved card from localStorage:", e);
+        }
+
+        // First time load (no stored card) -> show selection dialog
+        openSelectDialog();
+      }
+
+      /**
+       * Opens the card selection dialog (only triggered when no card is selected yet)
+       */
+      function openSelectDialog() {
+        if (selectedCard) return;
+
+        selectGridEl.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+
+        allCards.forEach((card) => {
+          const itemBtn = document.createElement("button");
+          itemBtn.type = "button";
+          itemBtn.className =
+            "group relative rounded-xl overflow-hidden border-2 border-slate-200 hover:border-indigo-400 active:scale-95 transition-all bg-white p-0.5 cursor-pointer focus:outline-none";
+
+          itemBtn.innerHTML = `
+                    <div class="aspect-[3/4] w-full overflow-hidden rounded-lg bg-slate-50">
+                        <img 
+                            src="${card.url}" 
+                            alt="${card.name}" 
+                            loading="lazy"
+                            onerror="this.onerror=null; this.src='https://placehold.co/300x420/f1f5f9/64748b?text=${encodeURIComponent(card.filename)}';"
+                            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                        >
+                    </div>
+                `;
+
+          itemBtn.addEventListener("click", () => {
+            selectAndStoreCard(card);
+          });
+
+          fragment.appendChild(itemBtn);
+        });
+
+        selectGridEl.appendChild(fragment);
+        selectModalEl.classList.remove("hidden");
+      }
+
+      /**
+       * Saves the chosen card to localStorage and locks selection
+       */
+      function selectAndStoreCard(card) {
+        if (selectedCard) return;
+        selectedCard = card;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(card));
+        } catch (e) {
+          console.warn("Unable to save card to localStorage:", e);
+        }
+        updateSelectedCardUI();
+        selectModalEl.classList.add("hidden");
+        showToast(`Selected: ${card.name}`);
+      }
+
+      /**
+       * Updates the footer button to show the stored card
+       */
+      function updateSelectedCardUI() {
+        const thumbEl = document.getElementById("footer-selected-thumb");
+        const labelEl = document.getElementById("footer-selected-label");
+        if (selectedCard) {
+          thumbEl.src = selectedCard.url;
+          thumbEl.classList.remove("hidden");
+          labelEl.textContent = selectedCard.name;
+        }
+      }
+
+      /**
+       * Renders cards in a strict 5-column grid sized to fit the screen without scrolling
+       */
+      function renderCards(cards) {
+        gridEl.innerHTML = "";
+
+        if (!cards || cards.length === 0) {
+          gridEl.classList.add("hidden");
+          return;
+        } else {
+          gridEl.classList.remove("hidden");
+        }
+
+        // Calculate exact number of rows needed for 5 columns so all cards fit on screen
+        const rowCount = Math.ceil(cards.length / 5);
+        gridEl.style.gridTemplateRows = `repeat(${rowCount}, minmax(0, 1fr))`;
+
+        const fragment = document.createDocumentFragment();
+
+        cards.forEach((card) => {
+          const cardWrapper = document.createElement("div");
+          cardWrapper.className =
+            "perspective-1000 w-full h-full min-h-0 cursor-pointer select-none group";
+
+          cardWrapper.innerHTML = `
+                    <div class="flip-inner rounded-lg sm:rounded-xl shadow-xs border border-slate-200">
+                        <!-- Front Face (Avatar Card) -->
+                        <div class="flip-face bg-white rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center">
+                            <img 
+                                src="${card.url}" 
+                                alt="${card.name}" 
+                                loading="lazy"
+                                onerror="this.onerror=null; this.src='https://placehold.co/300x420/f1f5f9/64748b?text=${encodeURIComponent(card.filename)}';"
+                                class="w-full h-full object-contain sm:object-cover transition-transform duration-300 group-hover:scale-105"
+                            >
+                        </div>
+                        <!-- Back Face (Blank Card) -->
+                        <div class="flip-face flip-back bg-slate-100 rounded-lg sm:rounded-xl border-2 border-slate-200/80 shadow-inner"></div>
+                    </div>
+                `;
+
+          // Toggle flip state when card is tapped or clicked
+          cardWrapper.addEventListener("click", () => {
+            cardWrapper.classList.toggle("is-flipped");
+          });
+
+          fragment.appendChild(cardWrapper);
+        });
+
+        gridEl.appendChild(fragment);
+      }
+
+      /**
+       * Reveals all flipped cards by flipping them back to their front face
+       */
+      function revealAllCards() {
+        const flippedCards = gridEl.querySelectorAll(".is-flipped");
+        flippedCards.forEach((card) => card.classList.remove("is-flipped"));
+      }
+
+      /**
+       * Copies text to clipboard using fallback-safe execCommand
+       */
+      function copyToClipboard(text) {
+        const tempInput = document.createElement("textarea");
+        tempInput.value = text;
+        tempInput.style.position = "fixed";
+        tempInput.style.opacity = "0";
+        document.body.appendChild(tempInput);
+        tempInput.select();
+
+        try {
+          document.execCommand("copy");
+          showToast("Copied CDN URL to clipboard!");
+        } catch (err) {
+          showToast("Failed to copy URL");
+        } finally {
+          document.body.removeChild(tempInput);
+        }
+      }
+
+      /**
+       * Shows toast notification
+       */
+      let toastTimeout;
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        document.getElementById("toast-message").textContent = message;
+        toast.classList.remove("translate-y-20", "opacity-0");
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.add("translate-y-20", "opacity-0");
+        }, 2500);
+      }
+
+      /**
+       * Opens modal with card details
+       */
+      function openModal(card) {
+        document.getElementById("modal-title").textContent =
+          `${card.name} (${card.filename})`;
+        document.getElementById("modal-image").src = card.url;
+        document.getElementById("modal-url").value = card.url;
+        document.getElementById("preview-modal").classList.remove("hidden");
+      }
+
+      /**
+       * Closes detail modal
+       */
+      function closeModal() {
+        document.getElementById("preview-modal").classList.add("hidden");
+      }
+
+      /**
+       * Copies URL from modal input
+       */
+      function copyModalUrl() {
+        copyToClipboard(document.getElementById("modal-url").value);
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+
+      window.addEventListener("DOMContentLoaded", fetchCards);
+    </script>
+  </body>
+</html>
