@@ -16,10 +16,12 @@ Fetch the list of all avatar cards:
     "avatars": [
       {
         "id": 1,
+        "name": "San San",
         "filename": "portrait_01.png"
       },
       {
         "id": 2,
+        "name": "Thida",
         "filename": "portrait_02.png"
       }
     ]
@@ -45,7 +47,7 @@ fetch("https://cdn.jsdelivr.net/gh/winminhtetz/avatar-cards/api/avatar_cards.jso
     console.log(`Loaded ${data.total} avatar cards`);
     data.avatars.forEach((avatar) => {
       const imgUrl = `https://cdn.jsdelivr.net/gh/winminhtetz/avatar-cards/cards/${avatar.filename}`;
-      console.log(avatar.id, imgUrl);
+      console.log(avatar.id, avatar.name, imgUrl);
     });
   });
 ```

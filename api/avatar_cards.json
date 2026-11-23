@@ -3,170 +3,212 @@
   "avatars": [
     {
       "id": 1,
+      "name": "San San",
       "filename": "portrait_01.png"
     },
     {
       "id": 2,
+      "name": "Thida",
       "filename": "portrait_02.png"
     },
     {
       "id": 3,
+      "name": "Aye Aye",
       "filename": "portrait_03.png"
     },
     {
       "id": 4,
+      "name": "Kyaw Kyaw",
       "filename": "portrait_04.png"
     },
     {
       "id": 5,
+      "name": "Zaw Zaw",
       "filename": "portrait_05.png"
     },
     {
       "id": 6,
+      "name": "U Ba",
       "filename": "portrait_06.png"
     },
     {
       "id": 7,
+      "name": "Bo Bo",
       "filename": "portrait_07.png"
     },
     {
       "id": 8,
+      "name": "Su Su",
       "filename": "portrait_08.png"
     },
     {
       "id": 9,
+      "name": "Phyu Phyu",
       "filename": "portrait_09.png"
     },
     {
       "id": 10,
+      "name": "Aung Aung",
       "filename": "portrait_10.png"
     },
     {
       "id": 11,
+      "name": "Min Min",
       "filename": "portrait_11.png"
     },
     {
       "id": 12,
+      "name": "Hein Hein",
       "filename": "portrait_12.png"
     },
     {
       "id": 13,
+      "name": "Zayar",
       "filename": "portrait_13.png"
     },
     {
       "id": 14,
+      "name": "Kaung Kaung",
       "filename": "portrait_14.png"
     },
     {
       "id": 15,
+      "name": "Tun Tun",
       "filename": "portrait_15.png"
     },
     {
       "id": 16,
+      "name": "Daw Hla",
       "filename": "portrait_16.png"
     },
     {
       "id": 17,
+      "name": "Daw Khin",
       "filename": "portrait_17.png"
     },
     {
       "id": 18,
+      "name": "U Mya",
       "filename": "portrait_18.png"
     },
     {
       "id": 19,
+      "name": "Sai Sai",
       "filename": "portrait_19.png"
     },
     {
       "id": 20,
+      "name": "Nay Lin",
       "filename": "portrait_20.png"
     },
     {
       "id": 21,
+      "name": "U Tin",
       "filename": "portrait_21.png"
     },
     {
       "id": 22,
+      "name": "Myo Myo",
       "filename": "portrait_22.png"
     },
     {
       "id": 23,
+      "name": "U San",
       "filename": "portrait_23.png"
     },
     {
       "id": 24,
+      "name": "Daw Nu",
       "filename": "portrait_24.png"
     },
     {
       "id": 25,
+      "name": "Thura",
       "filename": "portrait_25.png"
     },
     {
       "id": 26,
+      "name": "Yamin",
       "filename": "portrait_26.png"
     },
     {
       "id": 27,
+      "name": "May May",
       "filename": "portrait_27.png"
     },
     {
       "id": 28,
+      "name": "Wai Yan",
       "filename": "portrait_28.png"
     },
     {
       "id": 29,
+      "name": "Hnin Hnin",
       "filename": "portrait_29.png"
     },
     {
       "id": 30,
+      "name": "Sithu",
       "filename": "portrait_30.png"
     },
     {
       "id": 31,
+      "name": "Chaw Chaw",
       "filename": "portrait_31.png"
     },
     {
       "id": 32,
+      "name": "Soe Moe",
       "filename": "portrait_32.png"
     },
     {
       "id": 33,
+      "name": "Zin Min",
       "filename": "portrait_33.png"
     },
     {
       "id": 34,
+      "name": "U Kyaw",
       "filename": "portrait_34.png"
     },
     {
       "id": 35,
+      "name": "Moe Moe",
       "filename": "portrait_35.png"
     },
     {
       "id": 36,
+      "name": "U Tun",
       "filename": "portrait_36.png"
     },
     {
       "id": 37,
+      "name": "Khin Maung",
       "filename": "portrait_37.png"
     },
     {
       "id": 38,
+      "name": "Khaing Khaing",
       "filename": "portrait_38.png"
     },
     {
       "id": 39,
+      "name": "Pyae Phyo",
       "filename": "portrait_39.png"
     },
     {
       "id": 40,
+      "name": "Lin Lin",
       "filename": "portrait_40.png"
     },
     {
       "id": 41,
+      "name": "Wint Wint",
       "filename": "portrait_41.png"
     },
     {
       "id": 42,
+      "name": "Daw May",
       "filename": "portrait_42.png"
     }
   ]
